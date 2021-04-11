@@ -21,7 +21,7 @@ def recoverNormalize(data, min_, diff_):
 
 def gaussianBlur(data, ksize=3):
     assert ksize > 0 and ksize % 2 == 1, "ksize must be positive odd integer"
-
+    print(data)
     bias = (ksize - 1) // 2
     
     x = []
@@ -40,11 +40,10 @@ def gaussianBlur(data, ksize=3):
     pb, pe = np.array(pb), np.array(pe)
     data_pad = np.vstack((pb, data.values, pe))
     for i in range(data.shape[0]):
-        # tmp = data_pad[i:i+ksize] * kernel
-        tmp = data_pad[i:i+ksize]
+        tmp = data_pad[i:i+ksize] * kernel
         for j in range(data.shape[1]):
-            data.iloc[i,j] = np.sum(tmp[:,j]) / ksize
-    
+            data.iloc[i,j] = np.sum(tmp[:,j])
+    print(data)
     return data
 
 # use the number of ref_day's data to predict the number of predict_day's data
@@ -99,6 +98,39 @@ def lossDump(history):
     ax.set_title('history')
     ax.legend()
     plt.savefig('loss.png')
+
+def makeDecision(state, balance, dp1, dp2) -> int:
+    decision = 0
+    if dp1[0] < 0 and dp2 < 0:
+        if state == 1:
+            decision = -1
+        elif state == 0:
+            decision = -1
+        else :
+            decision = 0
+    elif dp1[0] < 0 and dp2 > 0:
+        if state == 1:
+            decision = 0
+        elif state == 0:
+            decision = 1
+        else :
+            decision = 1
+    elif dp1[0] > 0 and dp2 < 0:
+        if state == 1:
+            decision = -1
+        elif state == 0:
+            decision = 0
+        else :
+            decision = 0
+    elif dp1[0] > 0 and dp2 > 0:
+        if state == 1:
+            decision = 0
+        elif state == 0:
+            decision = 1
+        else :
+            decision = 1
+    return decision
+
 
 if __name__ == "__main__":
     import argparse
@@ -159,29 +191,71 @@ if __name__ == "__main__":
 
     lossDump(history.history)
 
-    predict_input = []
-    predict_input.append(np.array(data_norm.iloc[-REF_DAY:]))
-    predict_input = np.array(predict_input)
-
-    predict_output = lstm_model.predict(predict_input)[0]
-    predict_output = recoverNormalize(predict_output, data_min, data_diff)
-    print(predict_output)
-
     # save model
     save_name = '{}_{}.h5'.format(int(time.time()), np.around(np.min(history.history['val_mse']), decimals=4))
     lstm_model.save(save_name)
 
+    # output predict option
+    testing_data_raw = pd.read_csv(args.testing, header=None, usecols=[0,1,2,3], names=['open', 'high', 'low', 'close'])
+    testing_data = testing_data_raw.apply(lambda x: (x - data_min) / data_diff)
+
+    tmp = []
+    predict_input_raw = np.array(data_norm.iloc[-REF_DAY:])
+    tmp.append(predict_input_raw)
+    predict_input = np.array(tmp)
+    predict_output = lstm_model.predict(predict_input)[0]
+    predict_output = recoverNormalize(predict_output, data_min, data_diff)
+    
+    predict_res = []
+    predict_res.append(predict_output[0])
+
+    state = 0
+    dp1 = [0, 0]
+    dp2 = 0
+    hold_price = 0
+    print('hold price : {}'.format(hold_price))
+
+    with open(args.output, "w") as output_file:
+        for write_cnt in range(testing_data.shape[0] - 1):
+            predict_input_raw = np.vstack((predict_input_raw, testing_data.iloc[write_cnt]))[1:]
+
+            tmp = []
+            tmp.append(predict_input_raw)
+            predict_input = np.array(tmp)
+            predict_output = lstm_model.predict(predict_input)[0]
+            predict_output = recoverNormalize(predict_output, data_min, data_diff)
+            predict_res.append(predict_output[0])
+            print(predict_output)
+
+            # condition val 
+            tmp_price = testing_data_raw.iloc[write_cnt, 0]
+            balance = tmp_price - hold_price
+            dp1 = [predict_output[0] - tmp_price, predict_output[1] - predict_output[0]]
+            dp2 = dp1[1] - dp1[0]
+
+            # make decision
+            decision = makeDecision(state, balance, dp1, dp2)
+            old_state = state
+            state += decision
+            if (old_state == 1 and state == 0) or (old_state == -1 and state == 0):
+                hold_price = 0
+            elif (old_state == 0 and state == 1) or (old_state == 0 and state == -1):
+                hold_price = tmp_price
+            assert state <= 1 or state >= -1, 'something wrong!!!'
+            print('decision : {}'.format(decision))
+
+            output_file.write('{}\n'.format(decision))
 
 
-    # trader = Trader()
-    # trader.train(training_data)
+        fig, ax = plt.subplots(figsize=(20, 10))
+        ax.plot(testing_data_raw['open'], label='answer')
+        ax.plot(predict_res, label='predict')
+        ax.set_xlabel('index')
+        ax.set_ylabel('open price')
+        ax.set_title('Predict Result')
+        ax.legend()
+        plt.show()
+        plt.savefig('predict.png')
 
-    # testing_data = load_data(args.testing)
-    # with open(args.output, "w") as output_file:
-    #     for row in testing_data:
-    #         # We will perform your action as the open price in the next day.
-    #         action = trader.predict_action(row)
-    #         output_file.write(action)
-
-    #         # this is your option, you can leave it empty.
-    #         trader.re_training()
+        predict_res = np.array(predict_res)
+        print(predict_res)

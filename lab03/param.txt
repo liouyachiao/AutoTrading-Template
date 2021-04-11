@@ -2,7 +2,7 @@
     names=['open', 'high', 'low', 'close']
 
 # others
-    with mean blur (ksize = 5)
+    with mean blur (ksize = 3)
 
 # model param 
     BATCH_SIZE = 32
@@ -17,8 +17,6 @@
     patiance = 20
 
 # results
-    01 : 153.91 154.15
-    02 : 154.36 154.21
-    03 : 153.58 154.23
-    04 : 153.23 153.53
-    05 : 154.01 153.87
+    01 : 154.15 154.49
+    02 : 152.34 152.53
+    03 : 152.52 152.27
