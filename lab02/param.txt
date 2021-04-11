@@ -1,0 +1,22 @@
+# data col
+    names=['open', 'high', 'low', 'close']
+
+# others
+    with Gaussian Blur (ksize = 5)
+
+# model param 
+    BATCH_SIZE = 32
+    REF_DAY = 30
+    PREDICT_DAY = 2 
+    TRAIN_RATIO = 0.8
+    EPOCH = 100
+    PATIENCE = 20
+    KERNEL_SIZE = 5
+
+# callbacks
+    patiance = 20
+
+# results
+    lab01 : 153.91 154.15
+    lab02 : 154.36 154.21
+    lab03 : 153.58 154.23

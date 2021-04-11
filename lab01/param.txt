@@ -1,0 +1,22 @@
+# data col
+    names=['open', 'high', 'low', 'close']
+
+# data preprocessing
+    no Gaussian Blur
+
+# model param 
+    BATCH_SIZE = 32
+    REF_DAY = 30
+    PREDICT_DAY = 2 
+    TRAIN_RATIO = 0.8
+    EPOCH = 100
+    PATIENCE = 20
+    KERNEL_SIZE = 5
+
+# callbacks
+    patiance = 20
+
+# results
+    lab01 : 152.89 152.96
+    lab02 : 152.82 153.57
+    lab03 : 152.68 152.64
