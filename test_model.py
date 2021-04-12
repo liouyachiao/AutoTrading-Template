@@ -7,7 +7,7 @@ import keras
 REF_DAY = 30
 PREDICT_DAY = 2 
 
-filename = '1618199439_0.0003.h5'
+filename = 'lab02/2_01.h5'
 model = keras.models.load_model(filename)
 
 # input train
@@ -24,55 +24,26 @@ df_norm = df_test.apply(lambda x: (x - df_min) / df_diff).values
 
 def makeDecision(state, balance, dp1, dp2) -> int:
     decision = 0
-    if dp1[0] < 0 and dp1[1] < 0:
-        if dp2 > 0:
-            if state == 1:
-                decision = -1
-            elif state == 0:
-                decision = 0
-            else :
-                decision = 0
-        if dp2 < 0:
-            if state == 1:
-                decision = -1
-            elif state == 0:
-                decision = -1
-            else :
-                decision = 0
-    elif dp1[0] < 0 and dp1[1] > 0:
+    if dp1[0] < 0:
         if state == 1:
             decision = 0
         elif state == 0:
             decision = 1
         else :
             decision = 1
-    elif dp1[0] > 0 and dp1[1] < 0:
+    elif dp1[0] > 0:
         if state == 1:
             decision = -1
         elif state == 0:
             decision = -1
         else :
             decision = 0
-    elif dp1[0] > 0 and dp1[1] > 0:
-        if dp2 > 0:
-            if state == 1:
-                decision = 0
-            elif state == 0:
-                decision = 1
-            else :
-                decision = 1
-        if dp2 < 0:
-            if state == 1:
-                decision = 0
-            elif state == 0:
-                decision = 0
-            else :
-                decision = 1
     return decision
 
+predict = []
 predict_1 = []
 predict_2 = [150]
-predict_3 = [150, 150]
+predict.append([150, 150, 150])
 
 tmp = []
 tmp.append(input_raw)
@@ -81,7 +52,6 @@ output_raw = model.predict(input_data)[0]
 output_data = output_raw[:] * df_diff + df_min 
 predict_1.append(output_data[0])
 predict_2.append(output_data[1])
-predict_3.append(output_data[2])
 cache = output_data[0]
 
 state = 0
@@ -102,10 +72,11 @@ with open('test.csv', "w") as output_file:
         input_data = input_data[:] * df_diff + df_min
         output_data = output_raw[:] * df_diff + df_min 
         print(output_data)
+        predict.append(output_data)
 
         tmp_price = df_test.iloc[i, 0]
         balance = tmp_price - hold_price
-        dp1 = [output_data[1] - output_data[0], output_data[2] - output_data[1]]
+        dp1 = [output_data[0] - cache, output_data[1] - output_data[0]]
         dp2 = dp1[1] - dp1[0]
         cache = output_data[0]
 
@@ -125,13 +96,11 @@ with open('test.csv', "w") as output_file:
 
         predict_1.append(output_data[0])
         predict_2.append(output_data[1])
-        predict_3.append(output_data[2])
 
 fig, ax = plt.subplots(figsize = (12, 6))
 ax.plot(df_test['open'], label = 'ans')
 ax.plot(predict_1, label = 'predict 1')
 ax.plot(predict_2, label = 'predict 2')
-ax.plot(predict_3, label = 'predict 3')
 ax.legend()
 ax.set_xlabel('index')
 ax.set_ylabel('open price')

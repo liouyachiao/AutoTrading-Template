@@ -100,34 +100,20 @@ def lossDump(history):
 
 def makeDecision(state, balance, dp1, dp2) -> int:
     decision = 0
-    if dp1[1] < 0 and dp2 < 0:
+    if dp1[0] < 0:
+        if state == 1:
+            decision = 0
+        elif state == 0:
+            decision = 1
+        else :
+            decision = 1
+    elif dp1[0] > 0:
         if state == 1:
             decision = -1
         elif state == 0:
             decision = -1
         else :
             decision = 0
-    elif dp1[1] < 0 and dp2 > 0:
-        if state == 1:
-            decision = 0
-        elif state == 0:
-            decision = 1
-        else :
-            decision = 1
-    elif dp1[1] > 0 and dp2 < 0:
-        if state == 1:
-            decision = -1
-        elif state == 0:
-            decision = 0
-        else :
-            decision = 0
-    elif dp1[1] > 0 and dp2 > 0:
-        if state == 1:
-            decision = 0
-        elif state == 0:
-            decision = 1
-        else :
-            decision = 1
     return decision
 
 
@@ -207,6 +193,7 @@ if __name__ == "__main__":
     
     predict_res = []
     predict_res.append(predict_output[0])
+    cache = predict_output[0]
 
     state = 0
     dp1 = [0, 0]
@@ -223,14 +210,15 @@ if __name__ == "__main__":
             predict_input = np.array(tmp)
             predict_output = lstm_model.predict(predict_input)[0]
             predict_output = recoverNormalize(predict_output, data_min, data_diff)
-            predict_res.append(predict_output[1])
+            predict_res.append(predict_output)
             print(predict_output)
 
             # condition val 
             tmp_price = testing_data_raw.iloc[write_cnt, 0]
             balance = tmp_price - hold_price
-            dp1 = [predict_output[0] - tmp_price, predict_output[1] - predict_output[0]]
+            dp1 = [predict_output[0] - cache, predict_output[1] - predict_output[0]]
             dp2 = dp1[1] - dp1[0]
+            cache = predict_output[0]
 
             # make decision
             decision = makeDecision(state, balance, dp1, dp2)
@@ -247,8 +235,8 @@ if __name__ == "__main__":
 
 
         fig, ax = plt.subplots(figsize=(20, 10))
-        ax.plot(testing_data_raw['open'], label='answer')
-        ax.plot(predict_res, label='predict')
+        for i in range(len(predict_res)):
+            ax.plot(predict_res[i], label='predict')  
         ax.set_xlabel('index')
         ax.set_ylabel('open price')
         ax.set_title('Predict Result')
