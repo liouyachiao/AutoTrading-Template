@@ -135,7 +135,7 @@ if __name__ == "__main__":
     TRAIN_RATIO = 0.8
     EPOCH = 200
     PATIENCE = 20
-    KERNEL_SIZE = 5
+    KERNEL_SIZE = 9
 
     # load data 
     df = pd.read_csv(args.training, header=None, usecols=[0,1,2,3], names=['open', 'high', 'low', 'close'])
