@@ -61,14 +61,6 @@ parser.add_argument("--output", default="output.csv", help="output file name")
 - 訓練資料集預設為 training_data.csv
 - 測試資料集預設為 testing_data.csv
 - 預設輸出檔名為 output.csv
-
-```bash 
-$ python app.py --testing True
-```
-- 測試
-```bash 
-$ python app.py --training training_data.csv --output submission.csv
-```
 ### Training Data
 
 - 使用兩種資料集
