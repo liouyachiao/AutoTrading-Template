@@ -4,7 +4,7 @@
 # others
     with mean blur (ksize = 3)
 
-# model param 
+# model param
     BATCH_SIZE = 32
     REF_DAY = 30
     PREDICT_DAY = 2 
@@ -17,6 +17,6 @@
     patiance = 20
 
 # results
-    01 : 154.15 154.49
-    02 : 152.34 152.53
-    03 : 152.52 152.27
+    01 : 9.129999999999995
+    02 : 5.779999999999973
+    03 : 6.77000000000001

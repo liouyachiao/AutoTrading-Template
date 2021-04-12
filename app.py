@@ -30,6 +30,7 @@ def gaussianBlur(data, ksize=3):
     x = np.exp(-x**2)
     kernel = x / x.sum()
     pb, pe = [], []
+
     # padding begin
     for i in range(bias):
         pb.append(data.iloc[0].values)
@@ -38,7 +39,9 @@ def gaussianBlur(data, ksize=3):
         pe.append(data.iloc[-1].values)
     pb, pe = np.array(pb), np.array(pe)
     data_pad = np.vstack((pb, data.values, pe))
+
     for i in range(data.shape[0]):
+        # tmp = data_pad[i:i+ksize]
         tmp = data_pad[i:i+ksize] * kernel
         for j in range(data.shape[1]):
             data.iloc[i,j] = np.sum(tmp[:,j])
@@ -98,16 +101,16 @@ def lossDump(history):
     ax.legend()
     plt.savefig('loss.png')
 
-def makeDecision(state, balance, dp1, dp2) -> int:
+def makeDecision(state, dp1) -> int:
     decision = 0
-    if dp1[0] < 0:
+    if dp1 < 0:
         if state == 1:
             decision = 0
         elif state == 0:
             decision = 1
         else :
             decision = 1
-    elif dp1[0] > 0:
+    elif dp1 > 0:
         if state == 1:
             decision = -1
         elif state == 0:
@@ -128,9 +131,9 @@ if __name__ == "__main__":
 
     BATCH_SIZE = 32
     REF_DAY = 30
-    PREDICT_DAY = 3
+    PREDICT_DAY = 1
     TRAIN_RATIO = 0.8
-    EPOCH = 120
+    EPOCH = 200
     PATIENCE = 20
     KERNEL_SIZE = 5
 
@@ -196,38 +199,27 @@ if __name__ == "__main__":
     cache = predict_output[0]
 
     state = 0
-    dp1 = [0, 0]
-    dp2 = 0
-    hold_price = 0
-    print('hold price : {}'.format(hold_price))
+    dp1 = 0
 
     with open(args.output, "w") as output_file:
-        for write_cnt in range(testing_data.shape[0] - 1):
-            predict_input_raw = np.vstack((predict_input_raw, testing_data.iloc[write_cnt]))[1:]
+        for i in range(testing_data.shape[0] - 1):
+            predict_input_raw = np.vstack((predict_input_raw, testing_data.iloc[i]))[1:]
 
             tmp = []
             tmp.append(predict_input_raw)
             predict_input = np.array(tmp)
             predict_output = lstm_model.predict(predict_input)[0]
             predict_output = recoverNormalize(predict_output, data_min, data_diff)
-            predict_res.append(predict_output)
+            predict_res.append(predict_output[0])
             print(predict_output)
 
             # condition val 
-            tmp_price = testing_data_raw.iloc[write_cnt, 0]
-            balance = tmp_price - hold_price
-            dp1 = [predict_output[0] - cache, predict_output[1] - predict_output[0]]
-            dp2 = dp1[1] - dp1[0]
+            dp1 = predict_output[0] - cache
             cache = predict_output[0]
 
             # make decision
-            decision = makeDecision(state, balance, dp1, dp2)
-            old_state = state
+            decision = makeDecision(state, dp1)
             state += decision
-            if (old_state == 1 and state == 0) or (old_state == -1 and state == 0):
-                hold_price = 0
-            elif (old_state == 0 and state == 1) or (old_state == 0 and state == -1):
-                hold_price = tmp_price
             assert state <= 1 or state >= -1, 'something wrong!!!'
             print('decision : {}'.format(decision))
 
@@ -235,8 +227,8 @@ if __name__ == "__main__":
 
 
         fig, ax = plt.subplots(figsize=(20, 10))
-        for i in range(len(predict_res)):
-            ax.plot(predict_res[i], label='predict')  
+        ax.plot(testing_data_raw['open'], label='answer')
+        ax.plot(predict_res, label='predict')
         ax.set_xlabel('index')
         ax.set_ylabel('open price')
         ax.set_title('Predict Result')

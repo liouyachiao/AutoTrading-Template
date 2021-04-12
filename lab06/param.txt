@@ -16,5 +16,4 @@
 # callbacks
     patiance = 20
 
-# result 
-    01 : 6.77000000000001
+#result

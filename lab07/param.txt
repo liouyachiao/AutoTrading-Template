@@ -1,0 +1,19 @@
+# data col
+    names=['open', 'high', 'low', 'close']
+
+# others
+
+# model param 
+    BATCH_SIZE = 32
+    REF_DAY = 30
+    PREDICT_DAY = 1
+    TRAIN_RATIO = 0.8
+    EPOCH = 200
+    PATIENCE = 20
+    KERNEL_SIZE = 3
+
+# callbacks
+    patiance = 20
+
+# result
+    01 : 8.79000000000002
