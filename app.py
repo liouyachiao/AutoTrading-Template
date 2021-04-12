@@ -1,4 +1,3 @@
-# You can write code above the if-main block.
 from numpy.lib.npyio import save
 import pandas as pd
 import matplotlib.pyplot as plt 
@@ -101,28 +100,28 @@ def lossDump(history):
 
 def makeDecision(state, balance, dp1, dp2) -> int:
     decision = 0
-    if dp1[0] < 0 and dp2 < 0:
+    if dp1[1] < 0 and dp2 < 0:
         if state == 1:
             decision = -1
         elif state == 0:
             decision = -1
         else :
             decision = 0
-    elif dp1[0] < 0 and dp2 > 0:
+    elif dp1[1] < 0 and dp2 > 0:
         if state == 1:
             decision = 0
         elif state == 0:
             decision = 1
         else :
             decision = 1
-    elif dp1[0] > 0 and dp2 < 0:
+    elif dp1[1] > 0 and dp2 < 0:
         if state == 1:
             decision = -1
         elif state == 0:
             decision = 0
         else :
             decision = 0
-    elif dp1[0] > 0 and dp2 > 0:
+    elif dp1[1] > 0 and dp2 > 0:
         if state == 1:
             decision = 0
         elif state == 0:
@@ -143,9 +142,9 @@ if __name__ == "__main__":
 
     BATCH_SIZE = 32
     REF_DAY = 30
-    PREDICT_DAY = 2 
+    PREDICT_DAY = 3
     TRAIN_RATIO = 0.8
-    EPOCH = 100
+    EPOCH = 120
     PATIENCE = 20
     KERNEL_SIZE = 5
 
@@ -224,7 +223,7 @@ if __name__ == "__main__":
             predict_input = np.array(tmp)
             predict_output = lstm_model.predict(predict_input)[0]
             predict_output = recoverNormalize(predict_output, data_min, data_diff)
-            predict_res.append(predict_output[0])
+            predict_res.append(predict_output[1])
             print(predict_output)
 
             # condition val 

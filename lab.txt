@@ -2,3 +2,5 @@ lab01 : basic param
 lab02 : add mean convolution from lab01, ksize = 5
 lab03 : modify mean convolution to ksize = 3
 lab04 : modify convolution kernel to Gaussian kernel, ksize = 5
+lab05 : make policy simple
+lab06 : modify predict day to 3
