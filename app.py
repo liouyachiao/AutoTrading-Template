@@ -74,10 +74,6 @@ def buildManyToManyModel(in_shape, out_shape, batch_size):
     # Adding a second LSTM layer and some Dropout regularisation
     model.add(LSTM(64, return_sequences=True))
     model.add(Dropout(0.2))
-    
-    # # Adding a second LSTM layer and some Dropout regularisation
-    # model.add(LSTM(64, return_sequences=True))
-    # model.add(Dropout(0.2))
 
     # Adding a fourth LSTM layer and some Dropout regularisation
     model.add(TimeDistributed(Dense(units = 1)))
@@ -135,7 +131,7 @@ if __name__ == "__main__":
     TRAIN_RATIO = 0.8
     EPOCH = 200
     PATIENCE = 20
-    KERNEL_SIZE = 9
+    KERNEL_SIZE = 5
 
     # load data 
     df = pd.read_csv(args.training, header=None, usecols=[0,1,2,3], names=['open', 'high', 'low', 'close'])

@@ -38,15 +38,22 @@ $ conda install --yes --file requirements.txt
 ```shell 
 $ python app.py --training training.csv --testing testing.csv --output output.csv
 ```
-2. 使用現有模型來產出股票操作之 csv 檔
+- 訓練完後會產生時間戳記搭配 loss 為檔名的 h5 模型檔
+```python
+    # save model
+    save_name = '{}_{}.h5'.format(int(time.time()), np.around(np.min(history.history['val_mse']), decimals=4))
+    lstm_model.save(save_name)
+```
+- example : `1618239997_0.0002.h5`
+2. 使用現有模型(ex:training.h5)來產出股票預測及操作操作
 ```shell 
 $ python test_model.py --model [model name] --training [trainging data] --testing [testing data]
 ```
 - example
 ```shell 
-$ python test_model.py --model 1618230179_0.0001.h5 --training training.csv --testing testing.csv
+$ python test_model.py --model training.h5 --training training.csv --testing testing.csv
 ```
-3. 計算 profit
+3. 計算 profit，為訓練 model 所使用的對應測試 csv 檔
 ```shell 
 $ python profit_calculator.py testing.csv output.csv
 ```
@@ -149,18 +156,26 @@ def convolution(data, ksize=3)
 - 比較，上面為原始曲線、下面為平滑化曲線
 ksize = 5
 ![](https://i.imgur.com/7EIWJQr.png)
-![](https://i.imgur.com/Ik80AFW.png)
 ksize = 7
 ![](https://i.imgur.com/6ut9RX9.png)
-![](https://i.imgur.com/vMHvHmI.png)
 ksize = 9
 ![](https://i.imgur.com/7PEOwEQ.png)
-![](https://i.imgur.com/UcvwOjd.png)
 
 ### Maching Learning Model
 - input : 30 天的股市資料、包含 open price, high price, low price, close price
 - output : 延續 input 30 天資料隔天的 open price
 - LSTM
+
+```python
+    BATCH_SIZE = 32
+    REF_DAY = 30
+    PREDICT_DAY = 1
+    TRAIN_RATIO = 0.8
+    EPOCH = 200
+    PATIENCE = 20
+    KERNEL_SIZE = 9
+```
+
 ```shell=
 Model: "sequential"
 _________________________________________________________________
@@ -204,6 +219,27 @@ _________________________________________________________________
         - 持有股票 ： 0(持有)
         - 沒持有股票 ： 1(賣進)
         - 賣空狀態 ： 1(買空)
+    ```python=
+    # state 股票持有的狀態 1:持有一張 0:沒持有 -1:賣空
+    # dp1 今日預測跟昨日預測之 open price 的差值
+    def makeDecision(state, dp1) -> int:
+        decision = 0
+        if dp1 < 0:
+            if state == 1:
+                decision = 0
+            elif state == 0:
+                decision = 1
+            else :
+                decision = 1
+        elif dp1 > 0:
+            if state == 1:
+                decision = -1
+            elif state == 0:
+                decision = -1
+            else :
+                decision = 0
+    return decision
+    ```
 - 若測試的 csv 有 20 天，會將此 20 天資料之前的指定天數（在此為 30 天）設為初始預測 input 、預測完第一天後第二天再將第一天的資料加入預測 input 中、並去掉最舊的資料，因此每天都會有一筆新的資料加入預測 input 中
 - 保證不會使用到預測目標日期之後（含）的資料當作訓練 input 
 - 使用助教提供的 `profit_calculator.py` 來運算

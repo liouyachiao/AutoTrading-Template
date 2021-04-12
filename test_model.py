@@ -29,7 +29,7 @@ input_raw = df_norm.values[-REF_DAY:]
 df_test = pd.read_csv(args.testing, header=None, usecols=[0, 1, 2, 3], names=['open', 'high', 'low', 'close'])
 df_norm = df_test.apply(lambda x: (x - df_min) / df_diff).values
 
-def makeDecision(state, dp1, tmp_price) -> int:
+def makeDecision(state, dp1) -> int:
     decision = 0
     if dp1 < 0:
         if state == 1:
@@ -49,8 +49,6 @@ def makeDecision(state, dp1, tmp_price) -> int:
 
 predict = []
 predict_1 = []
-predict_2 = [150]
-predict.append([150, 150, 150])
 
 tmp = []
 tmp.append(input_raw)
@@ -85,7 +83,7 @@ with open(args.output, "w") as output_file:
         # print('tmp = {}, predict1 = {}, predict2 = {}, dp1[0] = {}, dp1[1] = {}'.format(tmp_price, output_data[0], output_data[1], dp1[0], dp1[1]))
 
         # make decision
-        decision = makeDecision(state, dp1, tmp_price)
+        decision = makeDecision(state, dp1)
         state += decision
         assert state <= 1 or state >= -1, 'something wrong!!!'
         print('{}\n'.format(decision))
