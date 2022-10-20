@@ -2,7 +2,7 @@
 
 Please clearly write your idea.
 # Code 簡述
-第七天前的策略 :
+- 用numpy計算標準差:
 以收盤價與開盤價比較
 漲幅超過 delta 則買
 跌幅超過 delta 則賣
