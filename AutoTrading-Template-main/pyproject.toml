@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "dsai-hw2-2021"
+version = "0.1.0"
+description = ""
+authors = ["liumi666 <whitepepper4140@gmail.com>"]
+readme = "README.md"
+packages = [{include = "dsai_hw2_2021"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+numpy = "1.19.5"
+pandas = "1.1.5"
+scikit-learn = "0.24.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
